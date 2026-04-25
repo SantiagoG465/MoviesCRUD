@@ -13,3 +13,16 @@ app = FastAPI(lifespan=create_all_tables)
 async def root():
     return {"message": "Welcome to Movies API"}
 
+@app.patch("/movies/{id}", response_model=Movie)
+async def update_movie(id: int, movie: MovieUpdate, session: SessionDep):
+    updated = update_one_movie_db(id, movie, session)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Movie {id} not found")
+    return updated
+
+@app.delete("/movies/{id}", response_model=Movie)
+async def delete_movie(id: int, session: SessionDep):
+    deleted = kill_one_movie_db(id, session)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Movie {id} not found")
+    return deleted

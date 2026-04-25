@@ -1,4 +1,4 @@
-from sqlalchemy import Session, select
+from sqlmodel import Session, select
 from models import Movie, MovieBase, MovieUpdate
 
 def create_movie(movie: MovieBase, session: Session):
