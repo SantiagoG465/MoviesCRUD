@@ -1,17 +1,23 @@
 from fastapi import FastAPI, HTTPException
-from models import MovieBase, Movie, MovieUpdate, ReviewBase, Review, ReviewUpdate
+from models import MovieBase, Movie, MovieUpdate, GenreBase, Genre, GenreUpdate, UserBase, User, UserUpdate
 from db import SessionDep, create_all_tables
 from operations_db import (create_movie_db,
                            show_all_movies_db,
                            find_one_movie_db,
                            update_one_movie_db,
                            kill_one_movie_db)
-from operations_review import (create_review_db,
-                                show_all_reviews_db,
-                                find_one_review_db,
-                                update_one_review_db,
-                                deactivate_review_db,
-                                show_active_reviews_db)
+from operations_genre import (create_genre_db,
+                               show_all_genres_db,
+                               find_one_genre_db,
+                               update_one_genre_db,
+                               delete_one_genre_db)
+from operations_user import (create_user_db,
+                              show_all_users_db,
+                              show_active_users_db,
+                              find_one_user_db,
+                              find_user_by_email_db,
+                              update_one_user_db,
+                              deactivate_user_db)
 
 app = FastAPI(lifespan=create_all_tables)
 
@@ -21,6 +27,42 @@ async def root():
     return {"message": "Welcome to Movies API 🎬"}
 
 
+# Genre endpoints
+@app.post("/genres", response_model=Genre)
+async def create_genre(genre: GenreBase, session: SessionDep):
+    return create_genre_db(genre, session)
+
+
+@app.get("/genres", response_model=list[Genre])
+async def show_genres(session: SessionDep):
+    return show_all_genres_db(session)
+
+
+@app.get("/genres/{id}", response_model=Genre)
+async def show_one_genre(id: int, session: SessionDep):
+    genre = find_one_genre_db(id, session)
+    if not genre:
+        raise HTTPException(status_code=404, detail=f"Genre {id} not found")
+    return genre
+
+
+@app.patch("/genres/{id}", response_model=Genre)
+async def update_genre(id: int, genre: GenreUpdate, session: SessionDep):
+    updated = update_one_genre_db(id, genre, session)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Genre {id} not found")
+    return updated
+
+
+@app.delete("/genres/{id}", response_model=Genre)
+async def delete_genre(id: int, session: SessionDep):
+    deleted = delete_one_genre_db(id, session)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Genre {id} not found")
+    return deleted
+
+
+# Movie endpoints
 @app.post("/movies", response_model=Movie)
 async def create_movie(movie: MovieBase, session: SessionDep):
     return create_movie_db(movie, session)
@@ -55,40 +97,49 @@ async def delete_movie(id: int, session: SessionDep):
     return deleted
 
 
-@app.post("/reviews", response_model=Review)
-async def create_review(review: ReviewBase, session: SessionDep):
-    return create_review_db(review, session)
+# User endpoints
+@app.post("/users", response_model=User)
+async def create_user(user: UserBase, session: SessionDep):
+    return create_user_db(user, session)
 
 
-@app.get("/reviews", response_model=list[Review])
-async def show_reviews(session: SessionDep):
-    return show_all_reviews_db(session)
+@app.get("/users", response_model=list[User])
+async def show_users(session: SessionDep):
+    return show_all_users_db(session)
 
 
-@app.get("/reviews/active", response_model=list[Review])
-async def show_active_reviews(session: SessionDep):
-    return show_active_reviews_db(session)
+@app.get("/users/active", response_model=list[User])
+async def show_active_users(session: SessionDep):
+    return show_active_users_db(session)
 
 
-@app.get("/reviews/{id}", response_model=Review)
-async def show_one_review(id: int, session: SessionDep):
-    review = find_one_review_db(id, session)
-    if not review:
-        raise HTTPException(status_code=404, detail=f"Review {id} not found")
-    return review
+@app.get("/users/search", response_model=User)
+async def search_user_by_email(email: str, session: SessionDep):
+    user = find_user_by_email_db(email, session)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User with email {email} not found")
+    return user
 
 
-@app.patch("/reviews/{id}", response_model=Review)
-async def update_review(id: int, review: ReviewUpdate, session: SessionDep):
-    updated = update_one_review_db(id, review, session)
+@app.get("/users/{id}", response_model=User)
+async def show_one_user(id: int, session: SessionDep):
+    user = find_one_user_db(id, session)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
+    return user
+
+
+@app.patch("/users/{id}", response_model=User)
+async def update_user(id: int, user: UserUpdate, session: SessionDep):
+    updated = update_one_user_db(id, user, session)
     if not updated:
-        raise HTTPException(status_code=404, detail=f"Review {id} not found")
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
     return updated
 
 
-@app.delete("/reviews/{id}", response_model=Review)
-async def deactivate_review(id: int, session: SessionDep):
-    deactivated = deactivate_review_db(id, session)
+@app.delete("/users/{id}", response_model=User)
+async def deactivate_user(id: int, session: SessionDep):
+    deactivated = deactivate_user_db(id, session)
     if not deactivated:
-        raise HTTPException(status_code=404, detail=f"Review {id} not found")
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
     return deactivated
