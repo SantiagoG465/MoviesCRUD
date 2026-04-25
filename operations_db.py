@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from models import Movie, MovieBase, MovieUpdate
 
-def create_movie(movie: MovieBase, session: Session):
+def create_movie_db(movie: MovieBase, session: Session):
     db_movie = Movie.model_validate(movie)
     session.add(db_movie)
     session.commit()
