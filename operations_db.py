@@ -7,3 +7,22 @@ def create_movie(movie: MovieBase, session: Session):
     session.commit()
     session.refresh(db_movie)
     return db_movie
+
+def show_all_movies_db(session: Session):
+    return session.exec(select(Movie)).all()
+
+
+def find_one_movie_db(id: int, session: Session):
+    return session.get(Movie, id)
+
+
+def update_one_movie_db(id: int, movie: MovieUpdate, session: Session):
+    db_movie = session.get(Movie, id)
+    if not db_movie:
+        return None
+    movie_data = movie.model_dump(exclude_unset=True)
+    db_movie.sqlmodel_update(movie_data)
+    session.add(db_movie)
+    session.commit()
+    session.refresh(db_movie)
+    return db_movie
