@@ -1,16 +1,15 @@
-# This is a sample Python script.
+from fastapi import FastAPI, HTTPException
+from models import MovieBase, Movie, MovieUpdate
+from db import SessionDep, create_all_tables
+from operations_db import (create_movie_db,
+                           show_all_movies_db,
+                           find_one_movie_db,
+                           update_one_movie_db,
+                           kill_one_movie_db)
 
-# Press Mayús+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+app = FastAPI(lifespan=create_all_tables)
 
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Movies API"}
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
