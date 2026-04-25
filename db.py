@@ -1,23 +1,19 @@
-from sqlmodel import SQLModel, create_engine, Session
-from fastapi import Depends
+from sqlmodel import Session, create_engine, SQLModel
+from fastapi import FastAPI, Depends
 from typing import Annotated
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
 
-DATABASE_URL = "sqlite:///movies.db"
+sqlite_name = "movies.db"
+sqlite_url = f"sqlite:///{sqlite_name}"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(sqlite_url)
 
 
 def create_all_tables(app: FastAPI):
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        SQLModel.metadata.create_all(engine)
-        yield
-    return lifespan(app)
+    SQLModel.metadata.create_all(engine)
+    yield
 
 
-def get_session():
+def get_session() -> Session:
     with Session(engine) as session:
         yield session
 
