@@ -26,3 +26,11 @@ def update_one_movie_db(id: int, movie: MovieUpdate, session: Session):
     session.commit()
     session.refresh(db_movie)
     return db_movie
+
+def kill_one_movie_db(id: int, session: Session):
+    db_movie = session.get(Movie, id)
+    if not db_movie:
+        return None
+    session.delete(db_movie)
+    session.commit()
+    return db_movie
