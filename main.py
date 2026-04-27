@@ -5,7 +5,8 @@ from operations_db import (create_movie_db,
                            show_all_movies_db,
                            find_one_movie_db,
                            update_one_movie_db,
-                           kill_one_movie_db)
+                           kill_one_movie_db,
+                           filter_movies_by_genre_db)
 from operations_genre import (create_genre_db,
                                show_all_genres_db,
                                find_one_genre_db,
@@ -72,6 +73,12 @@ async def create_movie(movie: MovieBase, session: SessionDep):
 async def show_movies(session: SessionDep):
     return show_all_movies_db(session)
 
+@app.get("/movies/filter", response_model=list[Movie])
+async def filter_movies_by_genre(genre_id: int, session: SessionDep):
+    movies = filter_movies_by_genre_db(genre_id, session)
+    if not movies:
+        raise HTTPException(status_code=404, detail=f"No movies found for genre {genre_id}")
+    return movies
 
 @app.get("/movies/{id}", response_model=Movie)
 async def show_one_movie(id: int, session: SessionDep):

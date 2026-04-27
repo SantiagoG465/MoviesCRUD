@@ -34,3 +34,6 @@ def kill_one_movie_db(id: int, session: Session):
     session.delete(db_movie)
     session.commit()
     return db_movie
+
+def filter_movies_by_genre_db(genre_id: int, session: Session):
+    return session.exec(select(Movie).where(Movie.genre_id == genre_id)).all()
