@@ -28,7 +28,6 @@ async def root():
     return {"message": "Welcome to Movies API 🎬"}
 
 
-# Genre endpoints
 @app.post("/genres", response_model=Genre)
 async def create_genre(genre: GenreBase, session: SessionDep):
     return create_genre_db(genre, session)
