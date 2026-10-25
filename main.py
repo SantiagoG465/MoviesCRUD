@@ -1,5 +1,15 @@
 from fastapi import FastAPI, HTTPException
-from models import MovieBase, Movie, MovieUpdate, GenreBase, Genre, GenreUpdate, UserBase, User, UserUpdate
+from models import (
+    MovieBase,
+    Movie,
+    MovieUpdate,
+    GenreBase,
+    Genre,
+    GenreUpdate,
+    DirectorBase,
+    Director,
+    DirectorUpdate,
+)
 
 from operations_movie_csv import (
     create_movie_csv,
@@ -7,7 +17,7 @@ from operations_movie_csv import (
     find_one_movie_csv,
     update_one_movie_csv,
     kill_one_movie_csv,
-    filter_movies_by_genre_csv
+    filter_movies_by_genre_csv,
 )
 
 from operations_genre_csv import (
@@ -15,18 +25,18 @@ from operations_genre_csv import (
     show_all_genres_csv,
     find_one_genre_csv,
     update_one_genre_csv,
-    delete_one_genre_csv
+    delete_one_genre_csv,
 )
 
-from operations_user_csv import (
-    create_user_csv,
-    show_all_users_csv,
-    show_active_users_csv,
-    show_inactive_users_csv,
-    find_one_user_csv,
-    find_user_by_email_csv,
-    update_one_user_csv,
-    deactivate_user_csv
+from operations_director_csv import (
+    create_director_csv,
+    show_all_directors_csv,
+    show_active_directors_csv,
+    show_inactive_directors_csv,
+    find_one_director_csv,
+    find_director_by_name_csv,
+    update_one_director_csv,
+    deactivate_director_csv,
 )
 
 app = FastAPI()
@@ -128,59 +138,59 @@ async def delete_movie(id: int):
     return deleted
 
 
-@app.post("/users", response_model=User)
-async def create_user(user: UserBase):
+@app.post("/directors", response_model=Director)
+async def create_director(director: DirectorBase):
     try:
-        return create_user_csv(user)
+        return create_director_csv(director)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/users", response_model=list[User])
-async def show_users():
-    return show_all_users_csv()
+@app.get("/directors", response_model=list[Director])
+async def show_directors():
+    return show_all_directors_csv()
 
 
-@app.get("/users/active", response_model=list[User])
-async def show_active_users():
-    return show_active_users_csv()
+@app.get("/directors/active", response_model=list[Director])
+async def show_active_directors():
+    return show_active_directors_csv()
 
 
-@app.get("/users/inactive", response_model=list[User])
-async def show_inactive_users():
-    return show_inactive_users_csv()
+@app.get("/directors/inactive", response_model=list[Director])
+async def show_inactive_directors():
+    return show_inactive_directors_csv()
 
 
-@app.get("/users/search", response_model=User)
-async def search_user_by_email(email: str):
-    user = find_user_by_email_csv(email)
-    if not user:
-        raise HTTPException(status_code=404, detail=f"User with email {email} not found")
-    return user
+@app.get("/directors/search", response_model=Director)
+async def search_director_by_name(name: str):
+    director = find_director_by_name_csv(name)
+    if not director:
+        raise HTTPException(status_code=404, detail=f"Director with name '{name}' not found")
+    return director
 
 
-@app.get("/users/{id}", response_model=User)
-async def show_one_user(id: int):
-    user = find_one_user_csv(id)
-    if not user:
-        raise HTTPException(status_code=404, detail=f"User {id} not found")
-    return user
+@app.get("/directors/{id}", response_model=Director)
+async def show_one_director(id: int):
+    director = find_one_director_csv(id)
+    if not director:
+        raise HTTPException(status_code=404, detail=f"Director {id} not found")
+    return director
 
 
-@app.patch("/users/{id}", response_model=User)
-async def update_user(id: int, user: UserUpdate):
+@app.patch("/directors/{id}", response_model=Director)
+async def update_director(id: int, director: DirectorUpdate):
     try:
-        updated = update_one_user_csv(id, user)
+        updated = update_one_director_csv(id, director)
         if not updated:
-            raise HTTPException(status_code=404, detail=f"User {id} not found")
+            raise HTTPException(status_code=404, detail=f"Director {id} not found")
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.delete("/users/{id}", response_model=User)
-async def deactivate_user(id: int):
-    deactivated = deactivate_user_csv(id)
+@app.delete("/directors/{id}", response_model=Director)
+async def deactivate_director(id: int):
+    deactivated = deactivate_director_csv(id)
     if not deactivated:
-        raise HTTPException(status_code=404, detail=f"User {id} not found")
+        raise HTTPException(status_code=404, detail=f"Director {id} not found")
     return deactivated
