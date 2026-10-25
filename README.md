@@ -1,23 +1,23 @@
 # MoviesCRUD API 🎬
 
-API REST desarrollada con **FastAPI** y **Pydantic** para la gestión de géneros, películas y usuarios con almacenamiento en archivos CSV.
+API REST desarrollada con **FastAPI** y **Pydantic** para la gestión de géneros, directores y películas con almacenamiento en archivos CSV.
 
 ---
 
 ## 1. Modelos de Datos (`models.py`)
 
 1. **`Genre`**: `id`, `name`
-2. **`Movie`**: `id`, `title`, `director`, `year`, `watched`, `genre_id`
-3. **`User`**: `id`, `name`, `email`, `is_active`
+2. **`Director`**: `id`, `name`, `nationality`, `is_active`
+3. **`Movie`**: `id`, `title`, `director_id`, `year`, `watched`, `genre_id`
 
 ---
 
 ## 2. Reglas de Negocio y Eliminación con Histórico
 
-- **Integridad de Géneros en Películas**: No se permite crear o actualizar una película con un `genre_id` que no exista en `genres.csv`.
+- **Integridad de Géneros y Directores en Películas**: No se permite crear o actualizar una película con un `genre_id` o `director_id` que no exista, ni asignar un director inactivo (`is_active = False`).
 - **Protección al Eliminar Géneros**: No se permite eliminar un género (`DELETE /genres/{id}`) si existen películas asociadas a ese género.
-- **Unicidad**: No se permiten géneros con el mismo nombre ni usuarios con el mismo correo electrónico (`email`).
-- **Eliminación Lógica / Histórico (`User`)**: Al eliminar un usuario (`DELETE /users/{id}`), no se borra físicamente del archivo sino que su estado cambia a `is_active = False`. Se pueden consultar usuarios activos (`GET /users/active`), inactivos (`GET /users/inactive`) o el histórico completo (`GET /users`).
+- **Unicidad**: No se permiten géneros ni directores con el mismo nombre.
+- **Eliminación Lógica / Histórico (`Director`)**: Al eliminar un director (`DELETE /directors/{id}`), no se borra físicamente del archivo sino que su estado cambia a `is_active = False`. Se pueden consultar directores activos (`GET /directors/active`), inactivos (`GET /directors/inactive`) o el histórico completo (`GET /directors`).
 
 ---
 
@@ -31,17 +31,17 @@ API REST desarrollada con **FastAPI** y **Pydantic** para la gestión de género
 | **Genre** | `GET` | `/genres/{id}` | Path: `id` (int) | Obtener un género por su ID | `200 OK`, `404 Not Found` |
 | **Genre** | `PATCH` | `/genres/{id}` | Path: `id`, Body: `GenreUpdate` | Actualizar datos de un género | `200 OK`, `400 Bad Request`, `404 Not Found` |
 | **Genre** | `DELETE` | `/genres/{id}` | Path: `id` (int) | Eliminar género (valida que no tenga películas asociadas) | `200 OK`, `400 Bad Request`, `404 Not Found` |
-| **Movie** | `POST` | `/movies` | Body: `MovieBase` | Crear una película (valida que `genre_id` exista) | `200 OK`, `400 Bad Request` |
+| **Movie** | `POST` | `/movies` | Body: `MovieBase` | Crear una película (valida que `genre_id` y `director_id` existan) | `200 OK`, `400 Bad Request` |
 | **Movie** | `GET` | `/movies` | Ninguno | Listar todas las películas | `200 OK` |
 | **Movie** | `GET` | `/movies/filter` | Query: `genre_id` (int) | **Filtrar** listado de películas por género | `200 OK`, `404 Not Found` |
 | **Movie** | `GET` | `/movies/{id}` | Path: `id` (int) | Obtener una película por su ID | `200 OK`, `404 Not Found` |
 | **Movie** | `PATCH` | `/movies/{id}` | Path: `id`, Body: `MovieUpdate` | Actualizar datos de una película | `200 OK`, `400 Bad Request`, `404 Not Found` |
 | **Movie** | `DELETE` | `/movies/{id}` | Path: `id` (int) | Eliminar una película por su ID | `200 OK`, `404 Not Found` |
-| **User** | `POST` | `/users` | Body: `UserBase` | Crear un nuevo usuario | `200 OK`, `400 Bad Request` |
-| **User** | `GET` | `/users` | Ninguno | Listar todos los usuarios (histórico completo) | `200 OK` |
-| **User** | `GET` | `/users/active` | Ninguno | Listar únicamente los usuarios **activos** (`is_active=True`) | `200 OK` |
-| **User** | `GET` | `/users/inactive` | Ninguno | Listar únicamente los usuarios **inactivos** (`is_active=False`) | `200 OK` |
-| **User** | `GET` | `/users/search` | Query: `email` (str) | **Buscar** un usuario por un atributo diferente al ID (`email`) | `200 OK`, `404 Not Found` |
-| **User** | `GET` | `/users/{id}` | Path: `id` (int) | Obtener un usuario por su ID | `200 OK`, `404 Not Found` |
-| **User** | `PATCH` | `/users/{id}` | Path: `id`, Body: `UserUpdate` | Actualizar datos de un usuario | `200 OK`, `400 Bad Request`, `404 Not Found` |
-| **User** | `DELETE` | `/users/{id}` | Path: `id` (int) | Desactivar un usuario (`is_active=False`, conserva histórico) | `200 OK`, `404 Not Found` |
+| **Director** | `POST` | `/directors` | Body: `DirectorBase` | Crear un nuevo director | `200 OK`, `400 Bad Request` |
+| **Director** | `GET` | `/directors` | Ninguno | Listar todos los directores (histórico completo) | `200 OK` |
+| **Director** | `GET` | `/directors/active` | Ninguno | Listar únicamente los directores **activos** (`is_active=True`) | `200 OK` |
+| **Director** | `GET` | `/directors/inactive` | Ninguno | Listar únicamente los directores **inactivos** (`is_active=False`) | `200 OK` |
+| **Director** | `GET` | `/directors/search` | Query: `name` (str) | **Buscar** un director por un atributo diferente al ID (`name`) | `200 OK`, `404 Not Found` |
+| **Director** | `GET` | `/directors/{id}` | Path: `id` (int) | Obtener un director por su ID | `200 OK`, `404 Not Found` |
+| **Director** | `PATCH` | `/directors/{id}` | Path: `id`, Body: `DirectorUpdate` | Actualizar datos de un director | `200 OK`, `400 Bad Request`, `404 Not Found` |
+| **Director** | `DELETE` | `/directors/{id}` | Path: `id` (int) | Desactivar un director (`is_active=False`, conserva histórico) | `200 OK`, `404 Not Found` |
