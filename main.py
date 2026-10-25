@@ -22,6 +22,7 @@ from operations_user_csv import (
     create_user_csv,
     show_all_users_csv,
     show_active_users_csv,
+    show_inactive_users_csv,
     find_one_user_csv,
     find_user_by_email_csv,
     update_one_user_csv,
@@ -38,7 +39,10 @@ async def root():
 
 @app.post("/genres", response_model=Genre)
 async def create_genre(genre: GenreBase):
-    return create_genre_csv(genre)
+    try:
+        return create_genre_csv(genre)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/genres", response_model=list[Genre])
@@ -56,18 +60,24 @@ async def show_one_genre(id: int):
 
 @app.patch("/genres/{id}", response_model=Genre)
 async def update_genre(id: int, genre: GenreUpdate):
-    updated = update_one_genre_csv(id, genre)
-    if not updated:
-        raise HTTPException(status_code=404, detail=f"Genre {id} not found")
-    return updated
+    try:
+        updated = update_one_genre_csv(id, genre)
+        if not updated:
+            raise HTTPException(status_code=404, detail=f"Genre {id} not found")
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.delete("/genres/{id}", response_model=Genre)
 async def delete_genre(id: int):
-    deleted = delete_one_genre_csv(id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail=f"Genre {id} not found")
-    return deleted
+    try:
+        deleted = delete_one_genre_csv(id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Genre {id} not found")
+        return deleted
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/movies", response_model=Movie)
@@ -117,9 +127,13 @@ async def delete_movie(id: int):
         raise HTTPException(status_code=404, detail=f"Movie {id} not found")
     return deleted
 
+
 @app.post("/users", response_model=User)
 async def create_user(user: UserBase):
-    return create_user_csv(user)
+    try:
+        return create_user_csv(user)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/users", response_model=list[User])
@@ -130,6 +144,11 @@ async def show_users():
 @app.get("/users/active", response_model=list[User])
 async def show_active_users():
     return show_active_users_csv()
+
+
+@app.get("/users/inactive", response_model=list[User])
+async def show_inactive_users():
+    return show_inactive_users_csv()
 
 
 @app.get("/users/search", response_model=User)
@@ -150,10 +169,13 @@ async def show_one_user(id: int):
 
 @app.patch("/users/{id}", response_model=User)
 async def update_user(id: int, user: UserUpdate):
-    updated = update_one_user_csv(id, user)
-    if not updated:
-        raise HTTPException(status_code=404, detail=f"User {id} not found")
-    return updated
+    try:
+        updated = update_one_user_csv(id, user)
+        if not updated:
+            raise HTTPException(status_code=404, detail=f"User {id} not found")
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.delete("/users/{id}", response_model=User)
