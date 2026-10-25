@@ -14,9 +14,25 @@ class GenreUpdate(BaseModel):
     name: Optional[str] = None
 
 
+class DirectorBase(BaseModel):
+    name: str = Field(min_length=3, max_length=100)
+    nationality: str = Field(min_length=2, max_length=60)
+    is_active: bool = True
+
+
+class Director(DirectorBase):
+    id: Optional[int] = None
+
+
+class DirectorUpdate(BaseModel):
+    name: Optional[str] = None
+    nationality: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
 class MovieBase(BaseModel):
     title: str = Field(min_length=1, max_length=100)
-    director: str = Field(min_length=3, max_length=100)
+    director_id: int
     year: int = Field(gt=1888, le=2026)
     watched: bool = False
     genre_id: int
@@ -28,23 +44,7 @@ class Movie(MovieBase):
 
 class MovieUpdate(BaseModel):
     title: Optional[str] = None
-    director: Optional[str] = None
+    director_id: Optional[int] = None
     year: Optional[int] = None
     watched: Optional[bool] = None
     genre_id: Optional[int] = None
-
-
-class UserBase(BaseModel):
-    name: str = Field(min_length=3, max_length=100)
-    email: str = Field(min_length=5, max_length=100)
-    is_active: bool = True
-
-
-class User(UserBase):
-    id: Optional[int] = None
-
-
-class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    is_active: Optional[bool] = None
