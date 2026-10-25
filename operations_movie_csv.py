@@ -3,6 +3,7 @@ import os
 from typing import Optional
 from models import Movie, MovieBase, MovieUpdate
 from operations_genre_csv import find_one_genre_csv
+from operations_director_csv import find_one_director_csv
 
 MOVIES_CSV = os.path.join(os.path.dirname(__file__), "data", "movies.csv")
 
@@ -26,7 +27,7 @@ def _read_movies() -> list[Movie]:
                 Movie(
                     id=int(row["id"]),
                     title=row["title"],
-                    director=row["director"],
+                    director_id=int(row["director_id"]),
                     year=int(row["year"]),
                     watched=_parse_bool(row["watched"]),
                     genre_id=int(row["genre_id"]),
@@ -39,14 +40,14 @@ def _write_movies(movies: list[Movie]) -> None:
     os.makedirs(os.path.dirname(MOVIES_CSV), exist_ok=True)
     with open(MOVIES_CSV, mode="w", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(
-            file, fieldnames=["title", "director", "year", "watched", "genre_id", "id"]
+            file, fieldnames=["title", "director_id", "year", "watched", "genre_id", "id"]
         )
         writer.writeheader()
         for m in movies:
             writer.writerow(
                 {
                     "title": m.title,
-                    "director": m.director,
+                    "director_id": m.director_id,
                     "year": m.year,
                     "watched": m.watched,
                     "genre_id": m.genre_id,
@@ -58,12 +59,17 @@ def _write_movies(movies: list[Movie]) -> None:
 def create_movie_csv(movie: MovieBase) -> Movie:
     if not find_one_genre_csv(movie.genre_id):
         raise ValueError(f"Genre with id {movie.genre_id} does not exist")
+    director = find_one_director_csv(movie.director_id)
+    if not director:
+        raise ValueError(f"Director with id {movie.director_id} does not exist")
+    if not director.is_active:
+        raise ValueError(f"Director with id {movie.director_id} is inactive")
     movies = _read_movies()
     next_id = max((m.id for m in movies if m.id is not None), default=0) + 1
     new_movie = Movie(
         id=next_id,
         title=movie.title,
-        director=movie.director,
+        director_id=movie.director_id,
         year=movie.year,
         watched=movie.watched,
         genre_id=movie.genre_id,
@@ -93,6 +99,12 @@ def update_one_movie_csv(id: int, movie_update: MovieUpdate) -> Optional[Movie]:
             if "genre_id" in update_data and update_data["genre_id"] is not None:
                 if not find_one_genre_csv(update_data["genre_id"]):
                     raise ValueError(f"Genre with id {update_data['genre_id']} does not exist")
+            if "director_id" in update_data and update_data["director_id"] is not None:
+                director = find_one_director_csv(update_data["director_id"])
+                if not director:
+                    raise ValueError(f"Director with id {update_data['director_id']} does not exist")
+                if not director.is_active:
+                    raise ValueError(f"Director with id {update_data['director_id']} is inactive")
             for key, value in update_data.items():
                 if value is not None:
                     setattr(m, key, value)
